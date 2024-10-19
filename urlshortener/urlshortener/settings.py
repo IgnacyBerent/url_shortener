@@ -27,8 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-CELERY_BROKER_URL = "pyamqp://0.0.0.0:5672"
-
+CELERY_BROKER_URL = "pyamqp://guest:guest@localhost:5672//"
 
 # Application definition
 
