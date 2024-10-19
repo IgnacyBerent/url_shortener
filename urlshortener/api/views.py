@@ -1,50 +1,68 @@
 from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.shortcuts import redirect
 from rest_framework import status
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from .models import Url
 from .serializers import OutputUrlSerializer, InputUrlSerializer
 from .task import shorten_url_task
 
+@swagger_auto_schema(
+    method='get',
+    operation_description="View for getting all the urls",
+    responses={
+        200: openapi.Response(
+            description="A list of URLs",
+            examples={
+                "application/json": [
+                    {
+                        "id": 1,
+                        "original_url": "https://www.example.com",
+                        "shortened_url": "f5f034"
+                    },
+                    {
+                        "id": 2,
+                        "original_url": "https://www.example2.com",
+                        "shortened_url": "f523a8"
+                    }
+                ]
+            }
+        )
+    }
+)
 @api_view(["GET"])
 def get_urls(request):
-    """
-    View for getting all the urls
-
-    Output:
-    [
-        {
-            "id": 1,
-            "original_url": "https://www.example.com",
-            "shortened_url": "f5f034"
-        },
-        {
-            "id": 2,
-            "original_url": "https://www.example2.com",
-            "shortened_url": "f523a8"
-        }
-    ]
-    """
     urls = Url.objects.all()
     return Response(
         OutputUrlSerializer(urls, many=True).data,
         status=status.HTTP_200_OK
     )
 
+@swagger_auto_schema(
+    method='delete',
+    operation_description="View for deleting the url",
+    responses={
+        200: openapi.Response(
+            description="The url has been deleted.",
+            examples={
+                "application/json": {
+                    "message": "The url has been deleted."
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="The url does not exist.",
+            examples={
+                "application/json": {
+                    "message": "The url does not exist."
+                }
+            }
+        )
+    }
+)
 @api_view(["DELETE"])
 def delete_url(request, id: int):
-    """
-    View for deleting the url
-
-    Input:
-        id: int
-
-    Output:
-    {
-        "message": "The url has been deleted."
-    }
-    """
     url = Url.objects.filter(id=id).first()
     if url:
         url.delete()
@@ -57,34 +75,42 @@ def delete_url(request, id: int):
         status=status.HTTP_404_NOT_FOUND
     )
 
+@swagger_auto_schema(
+    method='post',
+    operation_description="View for shortening the url",
+    request_body=InputUrlSerializer,
+    responses={
+        201: openapi.Response(
+            description="The url has been shortened.",
+            examples={
+                "application/json": {
+                    "id": 1
+                }
+            }
+        ),
+        200: openapi.Response(
+            description="The url is already shortened.",
+            examples={
+                "application/json": {
+                    "id": 1
+                }
+            }
+        ),
+        400: "Bad Request"
+    }
+)
 @api_view(["POST"])
 def shorten_url(request):
-    """
-    View for shortening the url
-
-    Input:
-    {
-        "original_url": "https://www.example.com"
-    }
-
-    Output:
-    {
-        "id": 1,
-    }
-    """
     serializer = InputUrlSerializer(data=request.data)
     if serializer.is_valid():
         original_url = serializer.validated_data["original_url"]
-        # Check if the url is already shortened
         url = Url.objects.filter(original_url=original_url).first()
         if url:
-            # If the url is already shortened, return the shortened url
             return Response(
                 {"id": url.id},
                 status=status.HTTP_200_OK
             )
-        else: 
-            # If the url is not shortened, create a new shortened url
+        else:
             url = Url.objects.create(original_url=original_url)
             shorten_url_task.delay(url.id)
             return Response(
@@ -93,14 +119,30 @@ def shorten_url(request):
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+@swagger_auto_schema(
+    method='get',
+    operation_description="View for redirecting the shortened url to the original url",
+    responses={
+        302: openapi.Response(
+            description="Redirect to the original URL",
+            examples={
+                "application/json": {
+                    "message": "Redirecting to the original URL."
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="The url does not exist.",
+            examples={
+                "application/json": {
+                    "message": "The url does not exist."
+                }
+            }
+        )
+    }
+)
 @api_view(["GET"])
 def redirect_view(request, short_url: str):
-    """
-    View for redirecting the shortened url to the original url
-
-    Input:
-        short_url: str
-    """
     url = Url.objects.filter(short_url=short_url).first()
     if url:
         return redirect(url.original_url)
@@ -109,19 +151,30 @@ def redirect_view(request, short_url: str):
         status=status.HTTP_404_NOT_FOUND
     )
 
+@swagger_auto_schema(
+    method='get',
+    operation_description="View for getting the shortened url",
+    responses={
+        200: openapi.Response(
+            description="Shortened URL",
+            examples={
+                "application/json": {
+                    "shortened_url": "f5f034"
+                }
+            }
+        ),
+        404: openapi.Response(
+            description="The url does not exist.",
+            examples={
+                "application/json": {
+                    "message": "The url does not exist."
+                }
+            }
+        )
+    }
+)
 @api_view(["GET"])
 def get_shorten_url(request, id: int):
-    """
-    View for getting the shortened url
-
-    Input:
-        id: int
-
-    Output:
-    {
-        "shortened_url": "f5f034"
-    }
-    """
     url = Url.objects.filter(id=id).first()
     if url:
         return Response(
@@ -133,12 +186,22 @@ def get_shorten_url(request, id: int):
         status=status.HTTP_404_NOT_FOUND
     )
 
-
+@swagger_auto_schema(
+    method='get',
+    operation_description="View for health check",
+    responses={
+        200: openapi.Response(
+            description="The server is running.",
+            examples={
+                "application/json": {
+                    "message": "The server is running."
+                }
+            }
+        )
+    }
+)
 @api_view(["GET"])
 def health_check(request):
-    """
-    View for health check
-    """
     return Response(
         {"message": "The server is running."},
         status=status.HTTP_200_OK
