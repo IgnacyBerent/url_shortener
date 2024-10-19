@@ -47,6 +47,21 @@ services:
             - pgdata:/var/lib/postgresql/data/
     redis:
         image: "redis:alpine"
+    test:
+        build: .
+        container_name: test
+        command: python manage.py test
+        volumes:
+            - .:/usr/src/app/
+        environment:
+            - DEBUG=1
+            - DJANGO_ALLOWED_HOSTS=localhost 127.0.0.1 [::1]
+            - POSTGRES_DB=postgres
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+        depends_on:
+            - pgdb
+            - redis
         
 volumes:
     pgdata:
