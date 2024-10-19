@@ -5,12 +5,11 @@ from .models import Url
 import uuid
 
 @shared_task
-def shorten_url_task(original_url):
+def shorten_url_task(url_id: int):
     """
     Task for shortening the url
     """
-    url = Url.objects.create(
-        original_url=original_url,
-        short_url=uuid.uuid4().hex[:6]
-    )
+    url = Url.objects.filter(id=url_id).first()
+    url.short_url = str(uuid.uuid4())[:6]
+    url.save()
     
