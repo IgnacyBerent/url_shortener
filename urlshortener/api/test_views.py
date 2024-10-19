@@ -24,7 +24,7 @@ class UrlShortenerTests(APITestCase):
         data = {"original_url": "https://www.example3.com"}
         response = self.client.post(reverse('shorten_url'), data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['original_url'], "https://www.example3.com")
+        self.assertIn('id', response.data)
         self.assertTrue(Url.objects.filter(original_url="https://www.example3.com").exists())
 
     def test_redirect_view(self):

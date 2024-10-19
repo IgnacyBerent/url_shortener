@@ -65,17 +65,8 @@ def shorten_url(request):
     }
 
     Output:
-    If the url is already shortened:
     {
         "id": 1,
-        "original_url": "https://www.example.com",
-        "shortened_url": "f5f034"
-    }
-    else:
-    {
-        "id": 1,
-        "original_url": "https://www.example.com",
-        "shortened_url": ""
     }
     """
     serializer = InputUrlSerializer(data=request.data)
@@ -86,7 +77,7 @@ def shorten_url(request):
         if url:
             # If the url is already shortened, return the shortened url
             return Response(
-                OutputUrlSerializer(url).data,
+                {"id": url.id},
                 status=status.HTTP_200_OK
             )
         else: 
@@ -94,7 +85,7 @@ def shorten_url(request):
             url = Url.objects.create(original_url=original_url)
             shorten_url_task.delay(url.id)
             return Response(
-                OutputUrlSerializer(url).data,
+                {"id": url.id},
                 status=status.HTTP_201_CREATED
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
