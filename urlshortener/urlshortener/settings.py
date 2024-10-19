@@ -1,3 +1,5 @@
+import os
+
 """
 Django settings for urlshortener project.
 
@@ -26,8 +28,6 @@ SECRET_KEY = "django-insecure-$prej#001dxfh6u#00gnp4irf=^k!p3@ok227b8xxq5hcygsjg
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
-CELERY_BROKER_URL = "pyamqp://guest:guest@localhost:5672//"
 
 # Application definition
 
@@ -124,3 +124,6 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+CELERY_BROKER_URL =  os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
