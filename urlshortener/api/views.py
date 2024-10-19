@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.shortcuts import redirect
 from rest_framework import status
 from .models import Url
 from .serializers import OutputUrlSerializer, InputUrlSerializer
@@ -10,6 +11,18 @@ from .task import shorten_url_task
 def get_urls(request):
     """
     View for getting all the urls
+
+    Output:
+    [
+        {
+            "original_url": "https://www.example.com",
+            "shortened_url": "a1b2c3"
+        },
+        {
+            "original_url": "https://www.example2.com",
+            "shortened_url": "d4e5f6"
+        }
+    ]
     """
     urls = Url.objects.all()
     return Response(
@@ -17,10 +30,48 @@ def get_urls(request):
         status=status.HTTP_200_OK
     )
 
+@api_view(["DELETE"])
+def delete_url(request, id: int):
+    """
+    View for deleting the url
+
+    Output:
+    {
+        "message": "The url has been deleted."
+    }
+    """
+    url = Url.objects.filter(id=id).first()
+    if url:
+        url.delete()
+        return Response(
+            {"message": "The url has been deleted."},
+            status=status.HTTP_200_OK
+        )
+    return Response(
+        {"message": "The url does not exist."},
+        status=status.HTTP_404_NOT_FOUND
+    )
+
 @api_view(["POST"])
 def shorten_url(request):
     """
     View for shortening the url
+
+    Input:
+    {
+        "original_url": "https://www.example.com"
+    }
+
+    Output:
+    If the url is already shortened:
+    {
+        "original_url": "https://www.example.com",
+        "shortened_url": "a1b2c3"
+    }
+    else:
+    {
+        "message": "The url is being shortened. Please wait."
+    }
     """
     serializer = InputUrlSerializer(data=request.data)
     if serializer.is_valid():
@@ -34,9 +85,7 @@ def shorten_url(request):
                 status=status.HTTP_200_OK
             )
         else: 
-            url = Url.objects.create(original_url=original_url)
-            shorten_url_task.delay(url.id)
-            # Return message that the url is being shortened
+            shorten_url_task.delay(original_url=original_url)
             return Response(
                 {"message": "The url is being shortened. Please wait."},
                 status=status.HTTP_201_CREATED
