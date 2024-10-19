@@ -37,6 +37,9 @@ def delete_url(request, id: int):
     """
     View for deleting the url
 
+    Input:
+        id: int
+
     Output:
     {
         "message": "The url has been deleted."
@@ -91,9 +94,12 @@ def shorten_url(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(["GET"])
-def redirect_view(request, short_url: str):  # Renamed function to avoid conflict
+def redirect_view(request, short_url: str):
     """
     View for redirecting the shortened url to the original url
+
+    Input:
+        short_url: str
     """
     url = Url.objects.filter(short_url=short_url).first()
     if url:
