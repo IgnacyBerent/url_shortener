@@ -13,6 +13,9 @@ def shorten_url_task(url_id: int):
     # Simulating a delay
     time.sleep(5)
     url = Url.objects.filter(id=url_id).first()
-    url.short_url = str(uuid.uuid4())[:6]
-    url.save()
-    
+    if url:
+        url.short_url = str(uuid.uuid4())[:6]
+        url.save()
+    else:
+        # Handle the case where the URL is not found
+        print(f"Url with id {url_id} not found.")
