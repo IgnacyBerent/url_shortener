@@ -108,3 +108,38 @@ def redirect_view(request, short_url: str):
         {"message": "The url does not exist."},
         status=status.HTTP_404_NOT_FOUND
     )
+
+@api_view(["GET"])
+def get_shorten_url(request, id: int):
+    """
+    View for getting the shortened url
+
+    Input:
+        id: int
+
+    Output:
+    {
+        "shortened_url": "f5f034"
+    }
+    """
+    url = Url.objects.filter(id=id).first()
+    if url:
+        return Response(
+            {"shortened_url": url.short_url},
+            status=status.HTTP_200_OK
+        )
+    return Response(
+        {"message": "The url does not exist."},
+        status=status.HTTP_404_NOT_FOUND
+    )
+
+
+@api_view(["GET"])
+def health_check(request):
+    """
+    View for health check
+    """
+    return Response(
+        {"message": "The server is running."},
+        status=status.HTTP_200_OK
+    )

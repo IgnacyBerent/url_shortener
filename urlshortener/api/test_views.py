@@ -31,3 +31,13 @@ class UrlShortenerTests(APITestCase):
         response = self.client.get(reverse('redirect_view', args=[self.url1.short_url]))
         self.assertEqual(response.status_code, status.HTTP_302_FOUND)
         self.assertEqual(response.url, self.url1.original_url)
+
+    def test_get_shorten_url(self):
+        response = self.client.get(reverse('get_shorten_url', args=[self.url1.id]))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['shortened_url'], self.url1.short_url)
+
+    def test_get_shorten_url_not_found(self):
+        response = self.client.get(reverse('get_shorten_url', args=[999]))
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data['message'], "The url does not exist.")
