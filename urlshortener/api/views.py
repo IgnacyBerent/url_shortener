@@ -15,12 +15,14 @@ def get_urls(request):
     Output:
     [
         {
+            "id": 1,
             "original_url": "https://www.example.com",
-            "shortened_url": "a1b2c3"
+            "shortened_url": "f5f034"
         },
         {
+            "id": 2,
             "original_url": "https://www.example2.com",
-            "shortened_url": "d4e5f6"
+            "shortened_url": "f523a8"
         }
     ]
     """
@@ -67,7 +69,7 @@ def shorten_url(request):
     {
         "id": 1,
         "original_url": "https://www.example.com",
-        "shortened_url": "a1b2c3"
+        "shortened_url": "f5f034"
     }
     else:
     {
