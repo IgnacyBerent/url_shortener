@@ -3,6 +3,9 @@
 ## Overview
 The URL Shortener is a web application that allows users to shorten long URLs into more manageable links. It provides both a frontend interface and a RESTful API for creating and managing shortened URLs.
 
+## Architecture
+The URL Shortener is built using the Django web framework and PostgreSQL database. The frontend is implemented using Django templates, while the API is implemented using Django REST framework. The application uses a custom URL shortening algorithm to generate unique short codes for each URL. It also uses Celery and RabbitMQ for background task processing. The application is containerized using Docker and can be deployed using Docker Compose.
+
 ## Installation
 To set up the project locally, follow these steps:
 
