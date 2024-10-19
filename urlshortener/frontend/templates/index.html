@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Shortener</title>
+</head>
+<body>
+    <h1>URL Shortener</h1>
+    <form id="url-form">
+        <label for="original_url">Enter URL:</label>
+        <input type="url" id="original_url" name="original_url" required>
+        <button type="submit">Shorten</button>
+    </form>
+    <button id="get-shortened-url" style="display:none;">Get Shortened URL</button>
+    <div id="result"></div>
+    <div id="message"></div>
+
+    <script>
+        let urlId = null;
+
+        document.getElementById('url-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const originalUrl = document.getElementById('original_url').value;
+            const response = await fetch('http://localhost:8000/api/shorten_url/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ original_url: originalUrl }),
+            });
+            const result = await response.json();
+            urlId = result.id;
+            document.getElementById('get-shortened-url').style.display = 'block';
+            document.getElementById('message').innerText = 'URL is being generated. Please click "Get Shortened URL" to retrieve it.';
+        });
+
+        document.getElementById('get-shortened-url').addEventListener('click', async function() {
+            if (urlId) {
+                const response = await fetch(`http://localhost:8000/api/get_shorten_url/${urlId}/`);
+                if (response.status === 200) {
+                    const result = await response.json();
+                    document.getElementById('result').innerHTML = `
+                        <p>Shortened URL: <a href="api/${result.shortened_url}" target="_blank">${result.shortened_url}</a></p>
+                    `;
+                    document.getElementById('message').innerText = '';
+                } else {
+                    document.getElementById('message').innerText = 'URL is still being generated. Please try again.';
+                }
+            }
+        });
+    </script>
+</body>
+</html>
