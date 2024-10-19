@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.shortcuts import redirect
@@ -91,3 +91,16 @@ def shorten_url(request):
                 status=status.HTTP_201_CREATED
             )
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["GET"])
+def redirect_view(request, short_url: str):  # Renamed function to avoid conflict
+    """
+    View for redirecting the shortened url to the original url
+    """
+    url = Url.objects.filter(short_url=short_url).first()
+    if url:
+        return redirect(url.original_url)
+    return Response(
+        {"message": "The url does not exist."},
+        status=status.HTTP_404_NOT_FOUND
+    )
